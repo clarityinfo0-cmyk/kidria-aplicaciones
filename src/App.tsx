@@ -242,6 +242,83 @@ export default function App() {
     read: boolean;
   } | null>(null);
 
+  // PWA installation states
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [showIOSInstallModal, setShowIOSInstallModal] = useState(false);
+  const [pwaInstallDismissed, setPwaInstallDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('kidria_pwa_install_dismissed') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // Check display-mode standalone and beforeinstallprompt
+  useEffect(() => {
+    // Check if running as standalone
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+    if (isStandalone) {
+      setIsAppInstalled(true);
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Only show banner if not already installed and not dismissed in this session
+      if (!isStandalone && localStorage.getItem('kidria_pwa_install_dismissed') !== 'true') {
+        setIsAppInstalled(false);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+      showToast('🎉 ¡KIDRIA se ha instalado con éxito en tu pantalla de inicio!');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handlePWAInstallClick = async () => {
+    // Check if iOS (iPhone/iPad)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (isIOS) {
+      setShowIOSInstallModal(true);
+      return;
+    }
+
+    if (!deferredPrompt) {
+      // Fallback for laptops and androids where the event didn't fire yet or browser does not support it
+      alert("Para instalar esta aplicación, presiona el botón 'Instalar' (ícono de descarga con flecha) que aparece en la esquina derecha de la barra de de direcciones de tu navegador.");
+      return;
+    }
+
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsAppInstalled(true);
+      }
+    } catch (err) {
+      console.error("Error during PWA prompt:", err);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const dismissPwaInstall = () => {
+    try {
+      localStorage.setItem('kidria_pwa_install_dismissed', 'true');
+    } catch (e) {}
+    setPwaInstallDismissed(true);
+  };
+
   // Firebase Auth Observer
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -1009,7 +1086,19 @@ export default function App() {
         </div>
 
         {/* Real Authenticated User Section with Sign Out */}
-        <div className="flex items-center gap-3 bg-zinc-900/40 border border-zinc-800/80 px-3 py-1.5 rounded-2xl w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {!isAppInstalled && (
+            <button
+              onClick={handlePWAInstallClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/35 text-[10px] font-bold text-indigo-300 transition-all cursor-pointer shadow-lg hover:border-indigo-500/50"
+              title="Instalar App Oficial (PWA)"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Instalar App (PWA)</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-3 bg-zinc-900/40 border border-zinc-800/80 px-3 py-1.5 rounded-2xl w-full sm:w-auto justify-between sm:justify-end">
           <div className="flex items-center gap-2.5 text-left">
             <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-black text-xs text-indigo-400 font-display">
               {currentUser.uid === 'guest' ? 'VT' : (currentUser.nombre ? currentUser.nombre.substring(0, 2).toUpperCase() : 'VX')}
@@ -1041,7 +1130,8 @@ export default function App() {
             </button>
           )}
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Main Sandbox Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8">
@@ -1273,6 +1363,100 @@ export default function App() {
               }}
               showToast={showToast}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Floating PWA Installer Banner */}
+      {!isAppInstalled && !pwaInstallDismissed && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-950 border border-indigo-500/40 p-4 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-4 max-w-md w-[92%] animate-fade-in">
+          <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 shrink-0">
+            <Smartphone className="w-6 h-6 animate-bounce" />
+          </div>
+          <div className="text-center md:text-left">
+            <h4 className="text-sm font-bold text-white flex items-center justify-center md:justify-start gap-1.5">
+              <span>Instalar App Oficial (PWA)</span>
+              <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-full font-mono font-bold uppercase">Gratis</span>
+            </h4>
+            <p className="text-[11px] text-zinc-400 mt-1">Accede desde tu pantalla de inicio con carga ultra rápida, diseño nativo y soporte offline.</p>
+          </div>
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0 justify-end mt-2 md:mt-0">
+            <button 
+              onClick={handlePWAInstallClick}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg hover:shadow-indigo-600/20 w-full md:w-auto cursor-pointer"
+            >
+              Instalar
+            </button>
+            <button 
+              onClick={dismissPwaInstall}
+              className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer"
+              title="Omitir"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Custom iOS/Apple PWA Installation Guide Modal */}
+      {showIOSInstallModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl max-w-sm w-full relative space-y-4 shadow-2xl text-center">
+            <button 
+              onClick={() => setShowIOSInstallModal(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 hover:bg-zinc-800 rounded-lg cursor-pointer transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="mx-auto w-12 h-12 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl flex items-center justify-center text-indigo-400">
+              <Smartphone className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white">Instalar en tu iPhone o iPad</h3>
+              <p className="text-xs text-zinc-400">Sigue estos sencillos pasos para agregar KIDRIA a tu pantalla de inicio en iOS:</p>
+            </div>
+
+            <div className="bg-zinc-950/60 p-4 rounded-xl border border-zinc-850 text-left space-y-3.5">
+              <div className="flex items-start gap-3">
+                <span className="flex items-center justify-center w-5 h-5 bg-indigo-500/20 text-indigo-300 font-mono font-bold text-xs rounded-full shrink-0">1</span>
+                <p className="text-xs text-zinc-300">
+                  Abre esta página en el navegador <strong className="text-white font-semibold">Safari</strong>.
+                </p>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <span className="flex items-center justify-center w-5 h-5 bg-indigo-500/20 text-indigo-300 font-mono font-bold text-xs rounded-full shrink-0">2</span>
+                <p className="text-xs text-zinc-300">
+                  Toca el botón <strong className="text-white font-semibold">Compartir</strong> <span className="bg-zinc-800 border border-zinc-750 px-1.5 py-0.5 rounded text-sm inline-block">📤</span> en la barra de navegación de abajo.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <span className="flex items-center justify-center w-5 h-5 bg-indigo-500/20 text-indigo-300 font-mono font-bold text-xs rounded-full shrink-0">3</span>
+                <p className="text-xs text-zinc-300">
+                  Desliza hacia abajo y selecciona la opción <strong className="text-indigo-400 font-semibold">"Agregar al inicio"</strong> <span className="bg-zinc-800 border border-zinc-750 px-1.5 py-0.5 rounded text-sm inline-block">➕</span> (o <em>Add to Home Screen</em>).
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <span className="flex items-center justify-center w-5 h-5 bg-indigo-500/20 text-indigo-300 font-mono font-bold text-xs rounded-full shrink-0">4</span>
+                <p className="text-xs text-zinc-300">
+                  Presiona <strong className="text-white font-semibold">"Agregar"</strong> en la esquina superior derecha del celular. ¡Eso es todo!
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowIOSInstallModal(false);
+                dismissPwaInstall();
+              }}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+            >
+              Entendido
+            </button>
           </div>
         </div>
       )}
