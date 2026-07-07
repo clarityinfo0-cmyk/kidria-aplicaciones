@@ -1,0 +1,6 @@
+{
+  "name": "KIDRIA",
+  "description": "Plataforma SaaS de KIDRIA para agencias de desarrollo web, con seguimiento de proyectos en tiempo real, CRM, pagos con Stripe, chat interno, soporte, contratos y consultoría de IA con Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

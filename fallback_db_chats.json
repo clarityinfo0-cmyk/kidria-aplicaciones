@@ -1,0 +1,29 @@
+[
+  {
+    "id": "msg1",
+    "senderId": "user_admin_1",
+    "senderName": "Ingrid Becker",
+    "senderRole": "admin",
+    "text": "¡Hola Carlos! Bienvenido a tu panel de Vortex Apps. Aquí daremos seguimiento integral al desarrollo de Gourmet Express.",
+    "fecha": "2026-06-05 10:30",
+    "read": true
+  },
+  {
+    "id": "msg2",
+    "senderId": "user_cliente_1",
+    "senderName": "Carlos Gómez",
+    "senderRole": "cliente",
+    "text": "Excelente, muchas gracias. Quedó firmado el contrato y realizado el pago del anticipo por Stripe.",
+    "fecha": "2026-06-05 10:45",
+    "read": true
+  },
+  {
+    "id": "msg3",
+    "senderId": "user_admin_1",
+    "senderName": "Ingrid Becker",
+    "senderRole": "admin",
+    "text": "Perfecto, ya lo visualizamos en el CRM de Vortex Apps. Empezamos de inmediato con el diseño de identidad y bases de datos.",
+    "fecha": "2026-06-05 11:00",
+    "read": true
+  }
+]

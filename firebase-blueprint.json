@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profiles in Vortex Apps",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "nombre": { "type": "string" },
+        "empresa": { "type": "string" },
+        "role": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "telefono": { "type": "string" },
+        "giro": { "type": "string" }
+      },
+      "required": ["uid", "email", "nombre", "role"]
+    },
+    "ProjectOrder": {
+      "title": "ProjectOrder",
+      "description": "Vortex PWA contract orders and statuses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "cliente": { "type": "string" },
+        "correo": { "type": "string" },
+        "empresa": { "type": "string" },
+        "precioTotal": { "type": "number" },
+        "anticipo": { "type": "number" },
+        "saldoPendiente": { "type": "number" },
+        "estado": { "type": "string" }
+      },
+      "required": ["id", "cliente", "correo", "empresa"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Technical support tickets and history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "priority": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "title", "description"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Live messaging channels between clients and admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" }
+      },
+      "required": ["id", "senderId", "text"]
+    },
+    "Investigation": {
+      "title": "Investigation",
+      "description": "Vortex AI recorded business investigations and learnings",
+      "type": "object",
+      "properties": {
+        "businessType": { "type": "string" },
+        "digitizationLevel": { "type": "number" },
+        "growthOpportunity": { "type": "string" },
+        "digitalCompetition": { "type": "string" },
+        "automationPotential": { "type": "number" },
+        "detectedIssues": { "type": "array" },
+        "recommendedFeatures": { "type": "array" },
+        "projectionText": { "type": "string" },
+        "howToPay": { "type": "string" },
+        "recurringIdeas": { "type": "array" },
+        "aiUsage": { "type": "string" },
+        "automations": { "type": "array" },
+        "ownerBenefit": { "type": "string" },
+        "mockupTitle": { "type": "string" },
+        "mockupSubtitle": { "type": "string" }
+      },
+      "required": ["businessType"]
+    }
+  },
+  "firestore": {
+    "usuarios/{userId}": {
+      "schema": "UserProfile",
+      "description": "User collection mapped by authenticating UID"
+    },
+    "ordenes/{orderId}": {
+      "schema": "ProjectOrder",
+      "description": "System orders and proposals"
+    },
+    "tickets/{ticketId}": {
+      "schema": "SupportTicket",
+      "description": "Global support tickets list"
+    },
+    "chats/{chatId}": {
+      "schema": "ChatMessage",
+      "description": "Workspace real-time collaboration chats"
+    },
+    "investigaciones/{investigationId}": {
+      "schema": "Investigation",
+      "description": "Recorded business investigations for continuous learning"
+    }
+  }
+}

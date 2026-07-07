@@ -1,0 +1,210 @@
+[
+  {
+    "id": "order_1",
+    "cliente": "Carlos Gómez",
+    "correo": "kino9230@gmail.com",
+    "empresa": "Gourmet Express",
+    "telefono": "+52 55 4321 8765",
+    "giro": "Restaurantes y Delivery",
+    "proyecto": "PWA Gourmet Express & Delivery System",
+    "precioTotal": 15000,
+    "anticipo": 7500,
+    "saldoPendiente": 7500,
+    "estado": "step_firebase",
+    "fechaContratacion": "2026-06-05",
+    "fechaEntrega": "2026-07-05",
+    "mensualidad": 250,
+    "estadoStripe": "active",
+    "estadoFirebase": "pending",
+    "notasInternas": "El cliente es muy receptivo. Prioridad en animaciones móviles fluidas e integración ágil de repartidores.",
+    "prioridad": "alta",
+    "categoria": "PWA Premium",
+    "observaciones": "Requiere soporte de notificaciones push tanto en Android como iOS PWA.",
+    "responsableProyecto": "Lucas Prieto (Senior Frontend Developer)",
+    "historial": [
+      {
+        "id": "h1",
+        "fecha": "2026-06-05 10:00",
+        "titulo": "Proyecto Contratado",
+        "descripcion": "Firma de contrato digital y pago de anticipo del 50%.",
+        "autor": "Ingrid Becker"
+      },
+      {
+        "id": "h2",
+        "fecha": "2026-06-10 16:00",
+        "titulo": "Diseño UI Aprobado",
+        "descripcion": "Manual de marca y prototipo interactivo de Figma aprobado por el cliente.",
+        "autor": "Sofia Mendez"
+      },
+      {
+        "id": "h3",
+        "fecha": "2026-06-15 11:30",
+        "titulo": "Base de Datos Creada",
+        "descripcion": "Despliegue inicial de colecciones en Firestore y configuración de reglas.",
+        "autor": "Carlos Ortega"
+      },
+      {
+        "id": "h4",
+        "fecha": "2026-06-22 17:00",
+        "titulo": "Pasarela Stripe Configurada",
+        "descripcion": "Checkout de pagos de prueba y suscripciones mensuales enlazadas con éxito.",
+        "autor": "Tomas Ruiz"
+      }
+    ],
+    "archivos": [
+      {
+        "id": "f1",
+        "nombre": "Contrato_Desarrollo_Vortex.pdf",
+        "categoria": "contrato",
+        "url": "#",
+        "size": "2.4 MB",
+        "fecha": "2026-06-05"
+      },
+      {
+        "id": "f2",
+        "nombre": "Factura_Anticipo_F098.pdf",
+        "categoria": "factura",
+        "url": "#",
+        "size": "1.1 MB",
+        "fecha": "2026-06-05"
+      },
+      {
+        "id": "f3",
+        "nombre": "Guia_Diseno_GourmetExpress.pdf",
+        "categoria": "branding",
+        "url": "#",
+        "size": "4.8 MB",
+        "fecha": "2026-06-10"
+      },
+      {
+        "id": "f4",
+        "nombre": "Manual_Administrador_v1.pdf",
+        "categoria": "manual",
+        "url": "#",
+        "size": "3.1 MB",
+        "fecha": "2026-06-23"
+      },
+      {
+        "id": "f5",
+        "nombre": "GourmetExpress_Beta_Build.apk",
+        "categoria": "apk",
+        "url": "#",
+        "size": "28.4 MB",
+        "fecha": "2026-06-25"
+      }
+    ],
+    "facturas": [
+      {
+        "id": "inv_1",
+        "numero": "INV-2026-001",
+        "concepto": "Anticipo del 50% - Desarrollo PWA",
+        "monto": 7500,
+        "fechaEmision": "2026-06-05",
+        "fechaVencimiento": "2026-06-12",
+        "estado": "pagada"
+      },
+      {
+        "id": "inv_2",
+        "numero": "INV-2026-002",
+        "concepto": "Suscripción Mensual Soporte e IA - Junio",
+        "monto": 250,
+        "fechaEmision": "2026-06-05",
+        "fechaVencimiento": "2026-06-12",
+        "estado": "pagada"
+      },
+      {
+        "id": "inv_vencida",
+        "numero": "INV-2026-003-SUB",
+        "concepto": "Mensualidad Establecida Soporte y Servidores PWA",
+        "monto": 1500,
+        "fechaEmision": "2026-06-15",
+        "fechaVencimiento": "2026-06-25",
+        "estado": "vencida"
+      },
+      {
+        "id": "inv_3",
+        "numero": "INV-2026-003",
+        "concepto": "Suscripción Mensual Soporte e IA - Julio",
+        "monto": 250,
+        "fechaEmision": "2026-07-05",
+        "fechaVencimiento": "2026-07-12",
+        "estado": "pendiente"
+      },
+      {
+        "id": "inv_4",
+        "numero": "INV-2026-004",
+        "concepto": "Saldo Pendiente (50% a la Entrega)",
+        "monto": 7500,
+        "fechaEmision": "2026-07-05",
+        "fechaVencimiento": "2026-07-15",
+        "estado": "pendiente"
+      }
+    ],
+    "contractSigned": true,
+    "contractSignedDate": "2026-06-05",
+    "contractSignature": "Carlos Gómez"
+  },
+  {
+    "id": "order_client_fallback-31335d71ce10faee",
+    "cliente": "jesus alejandro lopez",
+    "correo": "veterinariapet@gmail.com",
+    "empresa": "veterinaria pet",
+    "telefono": "6871463198",
+    "giro": "Clínica de Salud, Estética o Vet",
+    "proyecto": "PWA veterinaria pet Enterprise System",
+    "precioTotal": 15000,
+    "anticipo": 7500,
+    "saldoPendiente": 7500,
+    "estado": "step_firebase",
+    "fechaContratacion": "2026-07-02",
+    "fechaEntrega": "2026-08-01",
+    "mensualidad": 250,
+    "estadoStripe": "active",
+    "estadoFirebase": "pending",
+    "notasInternas": "El cliente requiere desarrollo rápido y soporte optimizado.",
+    "prioridad": "alta",
+    "categoria": "PWA Premium",
+    "observaciones": "Configuración inicial en progreso.",
+    "responsableProyecto": "Lucas Prieto (Senior Frontend Developer)",
+    "historial": [
+      {
+        "id": "h1",
+        "fecha": "2026-07-02 14:11",
+        "titulo": "Proyecto Iniciado",
+        "descripcion": "Registro de cuenta e inicio de aprovisionamiento de la PWA.",
+        "autor": "Vortex Apps"
+      }
+    ],
+    "archivos": [
+      {
+        "id": "f1",
+        "nombre": "Guia_Desarrollo_Vortex.pdf",
+        "categoria": "manual",
+        "url": "#",
+        "size": "1.2 MB",
+        "fecha": "2026-07-02"
+      }
+    ],
+    "facturas": [
+      {
+        "id": "inv_1_1783001480343",
+        "numero": "INV-2026-001",
+        "concepto": "Anticipo del 50% - Desarrollo PWA",
+        "monto": 7500,
+        "fechaEmision": "2026-07-02",
+        "fechaVencimiento": "2026-07-09",
+        "estado": "pendiente"
+      },
+      {
+        "id": "inv_2_1783001480343",
+        "numero": "INV-2026-002",
+        "concepto": "Suscripción Mensual Soporte e IA",
+        "monto": 250,
+        "fechaEmision": "2026-07-02",
+        "fechaVencimiento": "2026-07-09",
+        "estado": "pendiente"
+      }
+    ],
+    "contractSigned": false
+  }
+]

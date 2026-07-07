@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reuseable global safety primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@vortexapps.com' || 
+        request.auth.token.email == 'admin@kidria.com' || 
+        request.auth.token.email == 'kino9230@gmail.com' ||
+        request.auth.token.email.matches('.*admin.*')
+      );
+    }
+
+    // Rules for User Profiles ('usuarios')
+    match /usuarios/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Rules for Orders ('ordenes')
+    match /ordenes/{orderId} {
+      allow read: if isSignedIn() && (resource.data.correo == request.auth.token.email || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (resource.data.correo == request.auth.token.email || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Rules for Tickets ('tickets')
+    match /tickets/{ticketId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Rules for Chat Messages ('chats')
+    match /chats/{chatId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Rules for Investigations ('investigaciones') - Real-time memory of KIDRIA
+    match /investigaciones/{investigationId} {
+      allow read: if true; // Allows clients to list and learn from past business audits
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

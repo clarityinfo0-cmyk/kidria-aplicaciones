@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ticket_1",
+    "title": "Error de prueba en webhook de Stripe",
+    "description": "A veces el webhook de renovación de suscripción devuelve un código 500 cuando el usuario es nuevo. Favor de verificar si el usuario se está creando en Firebase antes de recibir el evento de Stripe.",
+    "priority": "alta",
+    "category": "pagos",
+    "status": "resuelto",
+    "createdAt": "2026-06-23 11:20",
+    "replies": [
+      {
+        "id": "tr1",
+        "senderName": "Carlos Gómez",
+        "senderRole": "cliente",
+        "message": "Tuvimos este problema al registrar la tarjeta de prueba en el flujo.",
+        "fecha": "2026-06-23 11:20"
+      },
+      {
+        "id": "tr2",
+        "senderName": "Tomas Ruiz",
+        "senderRole": "admin",
+        "message": "Hola Carlos, hemos corregido el webhook. El error era una carrera de tiempos (race condition) donde Stripe nos enviaba el evento antes de que se guardara el uid en la base de datos de Firestore. Ya fue solucionado.",
+        "fecha": "2026-06-23 15:45"
+      }
+    ],
+    "rating": 5,
+    "assignedTo": "Tomas Ruiz"
+  },
+  {
+    "id": "ticket_2",
+    "title": "Detalle de notificaciones Push en Safari iOS",
+    "description": "Las notificaciones push no se muestran de inmediato en mi iPhone, ¿se necesita instalar la app en la pantalla de inicio primero para que funcione?",
+    "priority": "media",
+    "category": "bugs",
+    "status": "en_progreso",
+    "createdAt": "2026-06-26 14:10",
+    "replies": [
+      {
+        "id": "tr3",
+        "senderName": "Carlos Gómez",
+        "senderRole": "cliente",
+        "message": "Sí, confirmamos que al instalar la PWA funciona mejor, pero queremos estar seguros de si hay algún paso adicional.",
+        "fecha": "2026-06-26 14:10"
+      },
+      {
+        "id": "tr4",
+        "senderName": "Lucas Prieto",
+        "senderRole": "admin",
+        "message": "Correcto, Carlos. En iOS, las PWAs requieren agregarse a la pantalla de inicio para habilitar la API de Notificaciones Push. En el siguiente paso optimizaremos un modal popup que le enseñará al usuario exactamente cómo agregarlo en 2 clics.",
+        "fecha": "2026-06-26 16:30"
+      }
+    ],
+    "rating": null,
+    "assignedTo": "Lucas Prieto"
+  }
+]
