@@ -50,6 +50,18 @@ if (getApps().length === 0) {
     } catch (err) {
       console.error("Error parsing FIREBASE_SERVICE_ACCOUNT:", err);
     }
+  } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    try {
+      const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+      firebaseAdminConfig.credential = cert({
+        projectId: process.env.FIREBASE_PROJECT_ID || firebaseProjectId,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      });
+      console.log("[Firebase Admin] Initialized successfully using individual environment variables.");
+    } catch (err) {
+      console.error("Error initializing Firebase Admin with individual env vars:", err);
+    }
   }
 
   firebaseApp = initializeApp(firebaseAdminConfig);
@@ -337,13 +349,13 @@ async function sendAuthEmail(to: string, subject: string, html: string, type: 'v
 // WITH RESILIENT LOCAL JSON FALLBACK DATABASES
 // ==========================================
 
-const FALLBACK_USERS_FILE = path.join(process.cwd(), 'fallback_db_usuarios.json');
-const FALLBACK_VERIFICATIONS_FILE = path.join(process.cwd(), 'fallback_db_verificaciones.json');
-const FALLBACK_RESETS_FILE = path.join(process.cwd(), 'fallback_db_resets.json');
-const FALLBACK_ORDERS_FILE = path.join(process.cwd(), 'fallback_db_ordenes.json');
-const FALLBACK_TICKETS_FILE = path.join(process.cwd(), 'fallback_db_tickets.json');
-const FALLBACK_CHATS_FILE = path.join(process.cwd(), 'fallback_db_chats.json');
-const FALLBACK_FCM_TOKENS_FILE = path.join(process.cwd(), 'fallback_db_fcm_tokens.json');
+const FALLBACK_USERS_FILE = 'fallback_db_usuarios.json';
+const FALLBACK_VERIFICATIONS_FILE = 'fallback_db_verificaciones.json';
+const FALLBACK_RESETS_FILE = 'fallback_db_resets.json';
+const FALLBACK_ORDERS_FILE = 'fallback_db_ordenes.json';
+const FALLBACK_TICKETS_FILE = 'fallback_db_tickets.json';
+const FALLBACK_CHATS_FILE = 'fallback_db_chats.json';
+const FALLBACK_FCM_TOKENS_FILE = 'fallback_db_fcm_tokens.json';
 
 // FCM Management Functions
 function validateFcmTokenData(tokenData: any): { valid: boolean; error?: string } {
@@ -689,23 +701,48 @@ async function sendPushNotification(
   }
 }
 
-function readJsonFallback(filePath: string): any[] {
+function getFallbackFilePath(filename: string): string {
+  // If running on Vercel or other serverless environment, write to /tmp
+  const isVercel = process.env.VERCEL || process.env.NOW_BUILDER || !process.env.PORT;
+  if (isVercel) {
+    return path.join('/tmp', filename);
+  }
+  return path.join(process.cwd(), filename);
+}
+
+function readJsonFallback(filename: string): any[] {
   try {
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, 'utf8');
+    const targetPath = getFallbackFilePath(filename);
+    
+    // On Vercel, if the file doesn't exist in /tmp, check if there's a pre-populated version in process.cwd()
+    if (!fs.existsSync(targetPath)) {
+      const originalPath = path.join(process.cwd(), filename);
+      if (fs.existsSync(originalPath)) {
+        const data = fs.readFileSync(originalPath, 'utf8');
+        try {
+          fs.writeFileSync(targetPath, data, 'utf8');
+        } catch (writeErr) {
+          // If write fails (e.g. read-only system outside of Vercel), just return parsed original data
+          return JSON.parse(data);
+        }
+        return JSON.parse(data);
+      }
+    } else {
+      const data = fs.readFileSync(targetPath, 'utf8');
       return JSON.parse(data);
     }
   } catch (err) {
-    // Silent recovery
+    console.warn(`[JSON Fallback Warning] Error reading JSON fallback ${filename}:`, err);
   }
   return [];
 }
 
-function writeJsonFallback(filePath: string, data: any[]): void {
+function writeJsonFallback(filename: string, data: any[]): void {
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    // Silent recovery
+    const targetPath = getFallbackFilePath(filename);
+    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err: any) {
+    console.error(`[JSON Fallback Error] Error writing JSON fallback ${filename}:`, err.message);
   }
 }
 
@@ -862,15 +899,7 @@ async function safeGetOrders(email: string, role: string): Promise<any[]> {
       querySnapshot = await adminDb.collection('ordenes').where('correo', '==', cleanEmail).get();
     }
     const dbOrders = querySnapshot.docs.map(doc => doc.data());
-    const local = readJsonFallback(FALLBACK_ORDERS_FILE);
-    const filteredLocal = role === 'admin_general' ? local : local.filter(o => o.correo === cleanEmail);
-    const merged = [...dbOrders];
-    for (const locItem of filteredLocal) {
-      if (!merged.some(m => m.id === locItem.id)) {
-        merged.push(locItem);
-      }
-    }
-    return merged;
+    return dbOrders;
   } catch (err: any) {
     const local = readJsonFallback(FALLBACK_ORDERS_FILE);
     return role === 'admin_general' ? local : local.filter(o => o.correo === cleanEmail);
@@ -904,15 +933,7 @@ async function safeGetTickets(email: string, role: string): Promise<any[]> {
       querySnapshot = await adminDb.collection('tickets').where('userEmail', '==', cleanEmail).get();
     }
     const dbTickets = querySnapshot.docs.map(doc => doc.data());
-    const local = readJsonFallback(FALLBACK_TICKETS_FILE);
-    const filteredLocal = role === 'admin_general' ? local : local.filter(t => t.userEmail === cleanEmail);
-    const merged = [...dbTickets];
-    for (const locItem of filteredLocal) {
-      if (!merged.some(m => m.id === locItem.id)) {
-        merged.push(locItem);
-      }
-    }
-    return merged;
+    return dbTickets;
   } catch (err: any) {
     const local = readJsonFallback(FALLBACK_TICKETS_FILE);
     return role === 'admin_general' ? local : local.filter(t => t.userEmail === cleanEmail);
@@ -940,14 +961,7 @@ async function safeGetChats(): Promise<any[]> {
   try {
     const querySnapshot = await adminDb.collection('chats').get();
     const dbChats = querySnapshot.docs.map(doc => doc.data());
-    const local = readJsonFallback(FALLBACK_CHATS_FILE);
-    const merged = [...dbChats];
-    for (const locItem of local) {
-      if (!merged.some(m => m.id === locItem.id)) {
-        merged.push(locItem);
-      }
-    }
-    return merged;
+    return dbChats;
   } catch (err: any) {
     return readJsonFallback(FALLBACK_CHATS_FILE);
   }
@@ -1079,7 +1093,7 @@ async function safeDeleteReset(token: string): Promise<void> {
   }
 }
 
-const FALLBACK_INVESTIGACIONES_FILE = path.join(process.cwd(), 'fallback_db_investigaciones.json');
+const FALLBACK_INVESTIGACIONES_FILE = 'fallback_db_investigaciones.json';
 
 async function safeGetRecentInvestigations(limit: number): Promise<any[]> {
   try {
