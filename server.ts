@@ -57,11 +57,46 @@ if (getApps().length === 0) {
   firebaseApp = getApps()[0];
 }
 
-const adminAuth = getAuth(firebaseApp);
+// Lazy initializers using Proxies to avoid top-level crashes when credentials aren't fully set (like on external platforms)
+let _actualAdminAuth: any = null;
+const adminAuth = new Proxy({} as any, {
+  get(target, prop, receiver) {
+    if (!_actualAdminAuth) {
+      try {
+        _actualAdminAuth = getAuth(firebaseApp);
+      } catch (err) {
+        console.error("[Firebase Admin Auth Lazy Initialization Failed]:", err);
+        throw new Error("Servicio de autenticación de Firebase no disponible.");
+      }
+    }
+    const val = Reflect.get(_actualAdminAuth, prop, receiver);
+    if (typeof val === 'function') {
+      return val.bind(_actualAdminAuth);
+    }
+    return val;
+  }
+});
 
-const adminDb = (firestoreDatabaseId && firestoreDatabaseId !== "(default)" && firestoreDatabaseId.trim() !== "")
-  ? getFirestore(firebaseApp, firestoreDatabaseId)
-  : getFirestore(firebaseApp);
+let _actualAdminDb: any = null;
+const adminDb = new Proxy({} as any, {
+  get(target, prop, receiver) {
+    if (!_actualAdminDb) {
+      try {
+        _actualAdminDb = (firestoreDatabaseId && firestoreDatabaseId !== "(default)" && firestoreDatabaseId.trim() !== "")
+          ? getFirestore(firebaseApp, firestoreDatabaseId)
+          : getFirestore(firebaseApp);
+      } catch (err) {
+        console.error("[Firebase Admin Db Lazy Initialization Failed]:", err);
+        throw new Error("Base de datos de Firebase no disponible.");
+      }
+    }
+    const val = Reflect.get(_actualAdminDb, prop, receiver);
+    if (typeof val === 'function') {
+      return val.bind(_actualAdminDb);
+    }
+    return val;
+  }
+});
 
 const app = express();
 const PORT = 3000;
