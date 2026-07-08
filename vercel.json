@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "framework": "other",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api|.*\\.).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
