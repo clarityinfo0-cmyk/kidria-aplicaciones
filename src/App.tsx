@@ -1226,7 +1226,7 @@ export default function App() {
           <div className="flex items-center gap-4">
             <span className="text-zinc-500 text-[11px]">Síguenos:</span>
             <a 
-              href="https://facebook.com/kidria" 
+              href="https://www.facebook.com/share/1ZDvStpF3R/" 
               target="_blank" 
               referrerPolicy="no-referrer"
               className="flex items-center gap-1 hover:text-indigo-400 transition-all"
@@ -1235,7 +1235,7 @@ export default function App() {
               <span>Facebook</span>
             </a>
             <a 
-              href="https://instagram.com/kidria" 
+              href="https://www.instagram.com/kidria.ia?igsh=N3hzYmcwMHV2Nnlv" 
               target="_blank" 
               referrerPolicy="no-referrer"
               className="flex items-center gap-1 hover:text-pink-400 transition-all"
