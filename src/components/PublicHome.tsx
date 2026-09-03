@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowRight, BarChart3, Check, ChevronDown, Globe2,
-  IdCard, Menu, MessageCircle, Nfc, QrCode, ShieldCheck,
+  Download, IdCard, Menu, MessageCircle, Nfc, QrCode, ShieldCheck,
   Store, X, Zap
 } from 'lucide-react';
 
@@ -9,6 +9,8 @@ interface PublicHomeProps {
   onLogin: () => void;
   onStartDiagnosis: () => void;
   onDemoAccess: (role: 'cliente' | 'admin_general') => void;
+  onInstall: () => void;
+  isInstalled: boolean;
 }
 
 const services = [
@@ -51,7 +53,7 @@ function PublicLogo() {
   );
 }
 
-export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess }: PublicHomeProps) {
+export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess, onInstall, isInstalled }: PublicHomeProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [businessType, setBusinessType] = useState(businessTypes[0]);
   const [need, setNeed] = useState('');
@@ -90,6 +92,7 @@ export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess }: 
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
+            {!isInstalled && <button onClick={onInstall} className="inline-flex items-center gap-2 rounded-full border border-lime-300/25 bg-lime-300/8 px-4 py-2 text-sm font-bold text-lime-200 transition hover:bg-lime-300/15"><Download className="h-4 w-4" /> Instalar app</button>}
             <button onClick={onLogin} className="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Ingresar</button>
             <a href="#contacto" className="rounded-full bg-lime-300 px-5 py-2.5 text-sm font-extrabold text-[#07110e] transition hover:bg-lime-200">Hablar de mi negocio</a>
           </div>
@@ -105,6 +108,7 @@ export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess }: 
               <a href="#metodo" onClick={() => setMobileMenu(false)}>Cómo trabajamos</a>
               <a href="#demo" onClick={() => setMobileMenu(false)}>Probar la app</a>
               <button onClick={onLogin} className="rounded-xl border border-white/15 py-3 font-bold">Ingresar</button>
+              {!isInstalled && <button onClick={onInstall} className="flex items-center justify-center gap-2 rounded-xl bg-lime-300 py-3 font-black text-[#07110e]"><Download className="h-4 w-4" /> Instalar Kidria</button>}
             </div>
           </div>
         )}
@@ -132,6 +136,7 @@ export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess }: 
                   Explorar diagnóstico
                 </button>
               </div>
+              {!isInstalled && <button onClick={onInstall} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-lime-200 transition hover:text-lime-100"><Download className="h-4 w-4" /> Instalar Kidria en este dispositivo</button>}
               <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/55">
                 {['Hablas con personas', 'Propuesta clara', 'Acompañamiento continuo'].map(item => (
                   <span key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-lime-300" />{item}</span>

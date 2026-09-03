@@ -13,7 +13,6 @@ export default function CinematicIntro({ onComplete }: CinematicIntroProps) {
   const finish = () => {
     if (completed.current) return;
     completed.current = true;
-    sessionStorage.setItem('kidria_intro_seen', '1');
     onComplete();
   };
 
