@@ -9,6 +9,7 @@ import VisitorFunnel from './components/VisitorFunnel';
 import StripeSimulation from './components/StripeSimulation';
 import LoginScreen from './components/LoginScreen';
 import SplashIntro from './components/SplashIntro';
+import PublicHome from './components/PublicHome';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -194,8 +195,9 @@ export default function App() {
   const [state, setState] = useState(() => getStoredState());
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showGuestFunnel, setShowGuestFunnel] = useState(false);
   const [showFunnelForClient, setShowFunnelForClient] = useState(false);
   const [orders, setOrders] = useState<ProjectOrder[]>(state.orders);
   const [tickets, setTickets] = useState<SupportTicket[]>(state.tickets);
@@ -1000,6 +1002,19 @@ export default function App() {
     }
   };
 
+  const handleDemoAccess = (role: 'cliente' | 'admin_general') => {
+    if (role === 'admin_general') {
+      setCurrentUser({
+        uid: 'demo_admin_kidria', email: 'admin.demo@kidria.com', nombre: 'Equipo Kidria',
+        empresa: 'Kidria', role: 'admin_general', telefono: '+52 479 229 3687', giro: 'Transformación de negocios'
+      });
+    } else {
+      setCurrentUser(INITIAL_PROFILES[0]);
+    }
+    setShowGuestFunnel(false);
+    showToast(role === 'admin_general' ? 'Entraste al panel demostrativo de Kidria.' : 'Entraste al panel demostrativo del negocio.');
+  };
+
   if (showIntro) {
     return <SplashIntro onComplete={() => setShowIntro(false)} />;
   }
@@ -1017,6 +1032,26 @@ export default function App() {
 
   if (!currentUser) {
     return null;
+  }
+
+  if (currentUser.role === 'invitado' && !showGuestFunnel) {
+    return (
+      <>
+        <PublicHome
+          onLogin={() => setShowLoginModal(true)}
+          onStartDiagnosis={() => setShowGuestFunnel(true)}
+          onDemoAccess={handleDemoAccess}
+        />
+        {showLoginModal && (
+          <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/80 backdrop-blur-md">
+            <button onClick={() => setShowLoginModal(false)} className="fixed right-5 top-5 z-[110] rounded-full border border-white/15 bg-black/50 p-3 text-white" aria-label="Cerrar acceso">
+              <X className="h-5 w-5" />
+            </button>
+            <LoginScreen onLoginSuccess={(user) => { setCurrentUser(user); setShowLoginModal(false); }} showToast={showToast} />
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
