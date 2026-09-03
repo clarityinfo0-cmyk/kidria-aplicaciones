@@ -8,7 +8,7 @@ import AdminDashboard from './components/AdminDashboard';
 import VisitorFunnel from './components/VisitorFunnel';
 import StripeSimulation from './components/StripeSimulation';
 import LoginScreen from './components/LoginScreen';
-import SplashIntro from './components/SplashIntro';
+import CinematicIntro from './components/CinematicIntro';
 import PublicHome from './components/PublicHome';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -195,7 +195,7 @@ export default function App() {
   const [state, setState] = useState(() => getStoredState());
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
-  const [showIntro, setShowIntro] = useState(false);
+  const [showIntro, setShowIntro] = useState(() => sessionStorage.getItem('kidria_intro_seen') !== '1');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showGuestFunnel, setShowGuestFunnel] = useState(false);
   const [showFunnelForClient, setShowFunnelForClient] = useState(false);
@@ -1016,7 +1016,7 @@ export default function App() {
   };
 
   if (showIntro) {
-    return <SplashIntro onComplete={() => setShowIntro(false)} />;
+    return <CinematicIntro onComplete={() => setShowIntro(false)} />;
   }
 
   if (loadingSession) {
