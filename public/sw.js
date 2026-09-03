@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kidria-cache-v1';
+const CACHE_NAME = 'kidria-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -39,6 +39,20 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests and skip API calls or browser extensions
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+    return;
+  }
+
+  // Navigation requests are network-first so a stale app shell cannot leave the PWA blank.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
     return;
   }
 
