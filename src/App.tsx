@@ -195,7 +195,7 @@ export default function App() {
   const [state, setState] = useState(() => getStoredState());
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
-  const [showIntro, setShowIntro] = useState(() => sessionStorage.getItem('kidria_intro_seen') !== '1');
+  const [showIntro, setShowIntro] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showGuestFunnel, setShowGuestFunnel] = useState(false);
   const [showFunnelForClient, setShowFunnelForClient] = useState(false);
@@ -1041,6 +1041,8 @@ export default function App() {
           onLogin={() => setShowLoginModal(true)}
           onStartDiagnosis={() => setShowGuestFunnel(true)}
           onDemoAccess={handleDemoAccess}
+          onInstall={handlePWAInstallClick}
+          isInstalled={isAppInstalled}
         />
         {showLoginModal && (
           <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/80 backdrop-blur-md">
