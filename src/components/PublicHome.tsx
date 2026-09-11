@@ -80,7 +80,7 @@ export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess, on
             <div className="ambient"><i/><i/><i/><i/><i/><i/></div>
             <section className={`story-copy opening ${scene === 0 ? 'active' : ''}`}>
               <div className="hero-mark"><LogoMark/></div><p className="eyebrow">KIDRIA</p>
-              <h1>El futuro de tu negocio<br/><span>no debería verse como el pasado.</span></h1>
+              <h1>El futuro de tu negocio<br/> <span>no debería verse como el pasado.</span></h1>
               <div className="swipe"><ChevronDown/> Desliza para comenzar</div>
             </section>
             <div className={`phone-wrap ${scene >= 1 && scene <= 4 ? 'visible' : ''}`} style={{ transform: `translate3d(${scene === 4 ? 0 : 15}vw, ${scene === 1 ? 3 : 0}vh, 0) rotateY(${scene === 1 ? -12 : scene === 2 ? 8 : 0}deg) rotateX(${scene === 1 ? 4 : 0}deg) scale(${scene === 4 ? .72 : 1})` }}><Phone phase={scene}/></div>
