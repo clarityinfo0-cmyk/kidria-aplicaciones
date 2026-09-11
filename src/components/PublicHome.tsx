@@ -1,9 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import {
-  ArrowRight, BarChart3, Check, ChevronDown, Globe2,
-  Download, IdCard, Menu, MessageCircle, Nfc, QrCode, ShieldCheck,
-  Store, X, Zap
-} from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, BarChart3, Bell, Bot, ChevronDown, Download, MessageCircle, PackageCheck, QrCode, Scissors, ShieldCheck, ShoppingBag, Store, UserRound, Wrench } from 'lucide-react';
 
 interface PublicHomeProps {
   onLogin: () => void;
@@ -13,57 +9,56 @@ interface PublicHomeProps {
   isInstalled: boolean;
 }
 
-const services = [
-  {
-    icon: Globe2,
-    title: 'Aplicaciones para tu negocio',
-    description: 'Reservas, pedidos, catálogo, clientes, pagos y operación diaria en una solución hecha para tu forma de trabajar.',
-    tag: 'A tu medida'
-  },
-  {
-    icon: QrCode,
-    title: 'Menús y catálogos QR',
-    description: 'Actualiza precios, productos y promociones sin volver a imprimir. Tus clientes escanean y ven todo al instante.',
-    tag: 'Sin app adicional'
-  },
-  {
-    icon: Nfc,
-    title: 'Experiencias NFC',
-    description: 'Tarjetas, placas o exhibidores que abren tu menú, catálogo, reseñas, pagos o la experiencia que necesites.',
-    tag: 'Un toque'
-  },
-  {
-    icon: IdCard,
-    title: 'Tarjetas de presentación NFC',
-    description: 'Comparte contacto, redes, portafolio y WhatsApp con un toque. Edita tu información sin reemplazar la tarjeta.',
-    tag: 'Siempre vigente'
-  }
-];
-
 const businessTypes = ['Restaurante o cafetería', 'Tienda o comercio', 'Servicios profesionales', 'Salud y bienestar', 'Otro negocio'];
+const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
-function PublicLogo() {
+function LogoMark() {
+  return <svg viewBox="0 0 120 120" fill="none" aria-hidden="true"><path d="M38 21h16L45 53l9 34H38L27 53Z" fill="#d8ff62"/><path d="M52 53 80 21h16L66 53l30 34H80Z" fill="#75f3dd"/></svg>;
+}
+
+function Phone({ phase }: { phase: number }) {
+  const pwa = phase >= 2;
+  const automation = phase >= 3;
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lime-300/20 bg-[#0b1713] p-2">
-      <svg viewBox="0 0 120 120" fill="none" className="h-full w-full" aria-hidden="true">
-        <path d="M40 25H52L44 53L52 81H40L32 53Z" fill="#bef264" />
-        <path d="M52 53L78 25H92L64 53L92 81H78Z" fill="#67e8f9" />
-      </svg>
+    <div className="story-phone">
+      <div className="phone-frame">
+        <div className="phone-speaker" />
+        <div className="phone-screen">
+          <div className="screen-top"><span>KIDRIA</span><span className="live-dot" /></div>
+          {!pwa && <div className="website-ui"><div className="website-glow"/><small>CAFÉ NORTE</small><h3>Hecho para disfrutarse.</h3><button>Ver menú</button><div className="site-cards"><i/><i/><i/></div></div>}
+          {pwa && !automation && <div className="pwa-ui"><div className="hello">Buenos días, Ana <span>●</span></div><h3>Tu negocio, hoy</h3><div className="metric"><b>24</b><small>pedidos activos</small><em>+18%</em></div><div className="app-grid"><div><ShoppingBag/><span>Pedidos</span></div><div><UserRound/><span>Clientes</span></div><div><Bell/><span>Avisos</span></div><div><PackageCheck/><span>Catálogo</span></div></div></div>}
+          {automation && <div className="automation-ui"><div className="chat client">Hola, ¿tienen espacio hoy?</div><div className="chat bot"><Bot/> Sí, a las 4:30. ¿Lo reservo?</div><div className="flow-line"/><div className="order-done"><PackageCheck/><div><b>Pedido registrado</b><small>Notificación enviada</small></div></div></div>}
+        </div>
+      </div>
     </div>
   );
 }
 
 export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess, onInstall, isInstalled }: PublicHomeProps) {
-  const [mobileMenu, setMobileMenu] = useState(false);
+  const storyRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
   const [businessType, setBusinessType] = useState(businessTypes[0]);
   const [need, setNeed] = useState('');
   const [sent, setSent] = useState(false);
 
-  const whatsappUrl = useMemo(() => {
-    const detail = need.trim() ? ` Necesito ayuda con: ${need.trim()}` : '';
-    return `https://wa.me/524792293687?text=${encodeURIComponent(`Hola KIDRIA, tengo un ${businessType.toLowerCase()} y quiero conocer qué solución me conviene.${detail}`)}`;
-  }, [businessType, need]);
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const el = storyRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setProgress(clamp(-rect.top / Math.max(1, el.offsetHeight - window.innerHeight)));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    return () => { removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll); cancelAnimationFrame(raf); };
+  }, []);
 
+  const scene = Math.min(5, Math.floor(progress * 5.99));
+  const whatsappUrl = useMemo(() => `https://wa.me/524792293687?text=${encodeURIComponent(`Hola KIDRIA, tengo un ${businessType.toLowerCase()} y quiero mejorar mi negocio.${need.trim() ? ` Necesito ayuda con: ${need.trim()}` : ''}`)}`, [businessType, need]);
   const sendRequest = (event: React.FormEvent) => {
     event.preventDefault();
     const request = { businessType, need: need.trim(), createdAt: new Date().toISOString() };
@@ -74,202 +69,41 @@ export default function PublicHome({ onLogin, onStartDiagnosis, onDemoAccess, on
   };
 
   return (
-    <div className="min-h-screen bg-[#07110e] text-[#f5f7f1] selection:bg-lime-300 selection:text-[#07110e]">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#07110e]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 lg:px-8">
-          <a href="#inicio" className="flex items-center gap-3" aria-label="KIDRIA inicio">
-            <PublicLogo />
-            <div>
-              <span className="block font-display text-lg font-black tracking-[0.16em]">KIDRIA</span>
-              <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] text-lime-300">Impulso para negocios</span>
-            </div>
-          </a>
-
-          <nav className="hidden items-center gap-7 text-sm font-medium text-white/70 md:flex">
-            <a className="transition hover:text-white" href="#soluciones">Soluciones</a>
-            <a className="transition hover:text-white" href="#metodo">Cómo trabajamos</a>
-            <a className="transition hover:text-white" href="#demo">Probar la app</a>
-          </nav>
-
-          <div className="hidden items-center gap-3 md:flex">
-            {!isInstalled && <button onClick={onInstall} className="inline-flex items-center gap-2 rounded-full border border-lime-300/25 bg-lime-300/8 px-4 py-2 text-sm font-bold text-lime-200 transition hover:bg-lime-300/15"><Download className="h-4 w-4" /> Instalar app</button>}
-            <button onClick={onLogin} className="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Ingresar</button>
-            <a href="#contacto" className="rounded-full bg-lime-300 px-5 py-2.5 text-sm font-extrabold text-[#07110e] transition hover:bg-lime-200">Hablar de mi negocio</a>
-          </div>
-
-          <button onClick={() => setMobileMenu(!mobileMenu)} className="rounded-xl border border-white/10 p-2.5 md:hidden" aria-label="Abrir menú">
-            {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-        {mobileMenu && (
-          <div className="border-t border-white/10 bg-[#07110e] px-5 py-5 md:hidden">
-            <div className="flex flex-col gap-4 text-sm">
-              <a href="#soluciones" onClick={() => setMobileMenu(false)}>Soluciones</a>
-              <a href="#metodo" onClick={() => setMobileMenu(false)}>Cómo trabajamos</a>
-              <a href="#demo" onClick={() => setMobileMenu(false)}>Probar la app</a>
-              <button onClick={onLogin} className="rounded-xl border border-white/15 py-3 font-bold">Ingresar</button>
-              {!isInstalled && <button onClick={onInstall} className="flex items-center justify-center gap-2 rounded-xl bg-lime-300 py-3 font-black text-[#07110e]"><Download className="h-4 w-4" /> Instalar Kidria</button>}
-            </div>
-          </div>
-        )}
+    <div className="cinematic-home">
+      <header className="story-nav">
+        <a href="#pelicula" className="nav-brand"><span><LogoMark/></span><b>KIDRIA</b></a>
+        <div><button onClick={onLogin}>Ingresar</button>{!isInstalled && <button className="install-pill" onClick={onInstall}><Download/> Instalar</button>}</div>
       </header>
-
       <main>
-        <section id="inicio" className="relative overflow-hidden px-5 pb-20 pt-36 lg:px-8 lg:pb-28 lg:pt-44">
-          <div className="pointer-events-none absolute left-1/2 top-16 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-lime-300/[0.07] blur-[110px]" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.08fr_.92fr]">
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-lime-300/25 bg-lime-300/10 px-3.5 py-2 text-xs font-bold text-lime-200">
-                <Store className="h-4 w-4" /> Tecnología entendible para negocios reales
-              </div>
-              <h1 className="max-w-4xl font-display text-5xl font-black leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-                Tu negocio puede avanzar. <span className="text-lime-300">Kidria lo hace posible.</span>
-              </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/66 sm:text-xl">
-                Entendemos cómo trabajas, detectamos dónde pierdes tiempo o ventas y construimos la solución que necesitas. La inteligencia artificial ayuda; el cambio lo diseña e implementa Kidria contigo.
-              </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <a href="#contacto" className="inline-flex items-center justify-center gap-2 rounded-full bg-lime-300 px-6 py-3.5 font-extrabold text-[#07110e] transition hover:-translate-y-0.5 hover:bg-lime-200">
-                  Cuéntanos qué necesitas <ArrowRight className="h-4 w-4" />
-                </a>
-                <button onClick={onStartDiagnosis} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-6 py-3.5 font-bold transition hover:bg-white/[0.08]">
-                  Explorar diagnóstico
-                </button>
-              </div>
-              {!isInstalled && <button onClick={onInstall} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-lime-200 transition hover:text-lime-100"><Download className="h-4 w-4" /> Instalar Kidria en este dispositivo</button>}
-              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/55">
-                {['Hablas con personas', 'Propuesta clara', 'Acompañamiento continuo'].map(item => (
-                  <span key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-lime-300" />{item}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative mx-auto w-full max-w-xl">
-              <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-lime-300/15 to-cyan-300/5 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/12 bg-[#0d1b16] p-5 shadow-2xl sm:p-7">
-                <div className="flex items-center justify-between border-b border-white/10 pb-5">
-                  <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-lime-300">Ruta Kidria</p><p className="mt-1 text-sm text-white/50">Del problema al resultado</p></div>
-                  <BarChart3 className="h-8 w-8 text-lime-300" />
-                </div>
-                <div className="mt-6 space-y-4">
-                  {[
-                    ['01', 'Entender', 'Escuchamos tu operación y tus objetivos.'],
-                    ['02', 'Resolver', 'Diseñamos la herramienta correcta, sin tecnología innecesaria.'],
-                    ['03', 'Mejorar', 'Medimos, acompañamos y hacemos crecer la solución.']
-                  ].map(([number, title, text], index) => (
-                    <div key={number} className="flex gap-4 rounded-2xl border border-white/8 bg-white/[0.035] p-4">
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${index === 2 ? 'bg-lime-300 text-[#07110e]' : 'bg-white/8 text-white/60'}`}>{number}</span>
-                      <div><h3 className="font-display font-bold">{title}</h3><p className="mt-1 text-sm leading-6 text-white/52">{text}</p></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 rounded-2xl bg-lime-300 p-4 text-[#07110e]">
-                  <div className="flex items-center gap-3"><Zap className="h-5 w-5" /><p className="text-sm font-black">La IA potencia la solución. Kidria dirige el cambio.</p></div>
-                </div>
-              </div>
-            </div>
+        <div id="pelicula" ref={storyRef} className="scroll-story">
+          <div className="story-stage">
+            <div className="ambient"><i/><i/><i/><i/><i/><i/></div>
+            <section className={`story-copy opening ${scene === 0 ? 'active' : ''}`}>
+              <div className="hero-mark"><LogoMark/></div><p className="eyebrow">KIDRIA</p>
+              <h1>El futuro de tu negocio<br/><span>no debería verse como el pasado.</span></h1>
+              <div className="swipe"><ChevronDown/> Desliza para comenzar</div>
+            </section>
+            <div className={`phone-wrap ${scene >= 1 && scene <= 4 ? 'visible' : ''}`} style={{ transform: `translate3d(${scene === 4 ? 0 : 15}vw, ${scene === 1 ? 3 : 0}vh, 0) rotateY(${scene === 1 ? -12 : scene === 2 ? 8 : 0}deg) rotateX(${scene === 1 ? 4 : 0}deg) scale(${scene === 4 ? .72 : 1})` }}><Phone phase={scene}/></div>
+            <section className={`story-copy side ${scene === 1 ? 'active' : ''}`}><p className="eyebrow">Presencia digital</p><h2>Tu negocio,<br/>imposible de ignorar.</h2><p>Una experiencia real, diseñada alrededor de tu identidad y de tus clientes.</p></section>
+            <section className={`story-copy side ${scene === 2 ? 'active' : ''}`}><p className="eyebrow">Aplicación instalable</p><h2>De vitrina<br/>a herramienta.</h2><p>Pedidos, clientes, notificaciones y catálogo. Todo en la mano.</p><div className="mini-tags"><span>Sin tienda de apps</span><span>Siempre actualizada</span></div></section>
+            <section className={`story-copy side automation-scene ${scene === 3 ? 'active' : ''}`}><p className="eyebrow">Automatización inteligente</p><h2>Mientras tú trabajas,<br/><span>Kidria conecta todo.</span></h2><p>La IA ayuda a atender. Kidria convierte esa conversación en un proceso que tu negocio puede usar.</p></section>
+            <section className={`ecosystem ${scene === 4 ? 'active' : ''}`}>
+              <div className="business-orbit o1"><Store/><span>Restaurante</span></div><div className="business-orbit o2"><Scissors/><span>Estética</span></div><div className="business-orbit o3"><Wrench/><span>Taller</span></div><div className="business-orbit o4"><ShoppingBag/><span>Tienda</span></div>
+              <div className="ecosystem-copy"><p className="eyebrow">Cada negocio es distinto</p><h2>No adaptamos tu negocio al software.<br/><span>Creamos el software alrededor de tu negocio.</span></h2></div>
+            </section>
+            <section className={`story-copy finale ${scene === 5 ? 'active' : ''}`}><div className="final-mark"><LogoMark/></div><p className="eyebrow">El siguiente paso es simple</p><h2>Tu negocio puede<br/><span>hacer mucho más.</span></h2><a href="#contacto">Cuéntanos qué necesita <ArrowRight/></a><small>Sin tecnicismos. Sin compromiso.</small></section>
+            <div className="progress-rail"><span style={{ height: `${progress * 100}%` }}/></div>
           </div>
-        </section>
-
-        <section id="soluciones" className="border-y border-white/8 bg-white/[0.025] px-5 py-24 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-lime-300">Soluciones que sí se usan</p>
-              <h2 className="mt-4 font-display text-3xl font-black tracking-tight sm:text-5xl">Lo que tu negocio necesita, conectado en un solo lugar.</h2>
-              <p className="mt-5 text-lg leading-8 text-white/58">Puedes comenzar con algo sencillo y crecer después. No tienes que comprar un sistema enorme para resolver un problema concreto.</p>
-            </div>
-            <div className="mt-12 grid gap-4 md:grid-cols-2">
-              {services.map(({ icon: Icon, title, description, tag }) => (
-                <article key={title} className="group rounded-[1.75rem] border border-white/10 bg-[#0b1713] p-6 transition hover:-translate-y-1 hover:border-lime-300/30 sm:p-8">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-300/12 text-lime-300"><Icon className="h-6 w-6" /></div>
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/45">{tag}</span>
-                  </div>
-                  <h3 className="mt-7 font-display text-xl font-bold">{title}</h3>
-                  <p className="mt-3 leading-7 text-white/55">{description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="metodo" className="px-5 py-24 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-lime-300">El método Kidria</p>
-                <h2 className="mt-4 font-display text-3xl font-black tracking-tight sm:text-5xl">No empezamos hablando de IA. Empezamos hablando de tu negocio.</h2>
-              </div>
-              <div className="space-y-4 text-white/60">
-                <p className="text-lg leading-8">Una herramienta solo vale si mejora algo real: atender más rápido, vender mejor, reducir errores o dar una mejor experiencia.</p>
-                <p className="text-lg leading-8">Por eso Kidria analiza primero, propone con claridad, implementa y acompaña. Si la IA aporta valor, la integramos de forma responsable; si no, elegimos una solución más simple.</p>
-              </div>
-            </div>
-            <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                ['1', 'Conversamos', 'Nos cuentas qué pasa hoy.'],
-                ['2', 'Priorizamos', 'Elegimos el cambio de mayor impacto.'],
-                ['3', 'Construimos', 'Implementamos y capacitamos.'],
-                ['4', 'Acompañamos', 'Medimos y mejoramos contigo.']
-              ].map(([n, title, text]) => (
-                <div key={n} className="rounded-2xl border border-white/10 p-5"><span className="text-sm font-black text-lime-300">0{n}</span><h3 className="mt-8 font-display text-lg font-bold">{title}</h3><p className="mt-2 text-sm leading-6 text-white/50">{text}</p></div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="demo" className="px-5 pb-24 lg:px-8">
-          <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#10231b] to-[#09120f] p-7 sm:p-10 lg:p-12">
-            <div className="grid gap-10 lg:grid-cols-[1fr_.9fr] lg:items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200"><ShieldCheck className="h-4 w-4" /> Entorno de demostración</div>
-                <h2 className="mt-5 font-display text-3xl font-black sm:text-4xl">Mira la experiencia desde ambos lados.</h2>
-                <p className="mt-4 max-w-xl leading-7 text-white/55">Prueba el seguimiento que recibe un negocio o entra al panel de gestión de Kidria. Los accesos son demostrativos y no modifican cuentas reales.</p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <button onClick={() => onDemoAccess('cliente')} className="rounded-2xl bg-white p-5 text-left text-[#07110e] transition hover:-translate-y-1">
-                  <Store className="h-6 w-6" /><span className="mt-8 block text-xs font-bold uppercase tracking-wider text-black/45">Demo usuario</span><strong className="mt-1 block font-display text-lg">Ver panel del negocio</strong>
-                </button>
-                <button onClick={() => onDemoAccess('admin_general')} className="rounded-2xl bg-lime-300 p-5 text-left text-[#07110e] transition hover:-translate-y-1">
-                  <BarChart3 className="h-6 w-6" /><span className="mt-8 block text-xs font-bold uppercase tracking-wider text-black/45">Demo administración</span><strong className="mt-1 block font-display text-lg">Ver panel Kidria</strong>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="contacto" className="border-t border-white/8 bg-[#0a1511] px-5 py-24 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.8fr_1.2fr]">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-lime-300">Empecemos por escucharte</p>
-              <h2 className="mt-4 font-display text-3xl font-black tracking-tight sm:text-5xl">¿Qué quieres mejorar en tu negocio?</h2>
-              <p className="mt-5 leading-7 text-white/55">Cuéntanos en palabras simples. Te responderemos por WhatsApp para entenderlo mejor, sin compromiso y sin tecnicismos.</p>
-              <div className="mt-7 flex items-center gap-3 text-sm text-white/55"><MessageCircle className="h-5 w-5 text-lime-300" /> Atención directa de Kidria</div>
-            </div>
-            <form onSubmit={sendRequest} className="rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-6 sm:p-8">
-              <label className="block text-sm font-bold" htmlFor="business-type">¿Qué tipo de negocio tienes?</label>
-              <div className="relative mt-3">
-                <select id="business-type" value={businessType} onChange={e => setBusinessType(e.target.value)} className="w-full appearance-none rounded-xl border border-white/12 bg-[#07110e] px-4 py-3.5 text-sm text-white outline-none focus:border-lime-300">
-                  {businessTypes.map(type => <option key={type}>{type}</option>)}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-white/40" />
-              </div>
-              <label className="mt-6 block text-sm font-bold" htmlFor="business-need">¿Qué te gustaría resolver?</label>
-              <textarea id="business-need" value={need} onChange={e => setNeed(e.target.value)} rows={4} placeholder="Ejemplo: quiero actualizar mi menú sin imprimirlo cada vez y recibir pedidos por WhatsApp..." className="mt-3 w-full resize-none rounded-xl border border-white/12 bg-[#07110e] px-4 py-3.5 text-sm leading-6 text-white outline-none placeholder:text-white/28 focus:border-lime-300" />
-              <button type="submit" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-3.5 font-extrabold text-[#07110e] transition hover:bg-lime-200">Enviar por WhatsApp <ArrowRight className="h-4 w-4" /></button>
-              {sent && <p className="mt-3 text-center text-xs text-lime-200">Solicitud guardada. Abrimos WhatsApp para continuar.</p>}
-              <p className="mt-4 text-center text-xs text-white/35">No compartiremos tu información con terceros.</p>
-            </form>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-white/8 px-5 py-8 text-sm text-white/42 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Kidria. Tecnología con propósito para negocios.</p>
-          <div className="flex gap-5"><a href="https://www.facebook.com/share/1ZDvStpF3R/" target="_blank" rel="noreferrer">Facebook</a><a href="https://www.instagram.com/kidria.ia" target="_blank" rel="noreferrer">Instagram</a><button onClick={onLogin}>Acceso clientes</button></div>
         </div>
-      </footer>
+
+        <section className="after-story">
+          <div className="after-intro"><p className="eyebrow">Ahora sí, hablemos de posibilidades</p><h2>Una experiencia bonita llama la atención.<br/><span>Una solución correcta cambia el negocio.</span></h2><p>Kidria escucha primero, identifica la mejora de mayor impacto y construye una herramienta que el equipo realmente pueda usar.</p></div>
+          <div className="capability-grid"><article><QrCode/><small>Conecta</small><h3>QR y NFC</h3><p>Menús, catálogos, reseñas, pagos o tarjetas de presentación que se actualizan sin volver a imprimir.</p></article><article><Bot/><small>Mejora</small><h3>Diagnóstico con IA</h3><p>Explora oportunidades concretas. La IA encuentra señales; Kidria diseña e implementa el cambio.</p><button onClick={onStartDiagnosis}>Iniciar diagnóstico <ArrowRight/></button></article><article><MessageCircle/><small>Automatiza</small><h3>Atención y operación</h3><p>Convierte preguntas, reservas y pedidos en acciones claras dentro del negocio.</p></article></div>
+          <div className="demo-panel"><div><ShieldCheck/><p className="eyebrow">Demos interactivas</p><h2>No tienes que imaginarlo.<br/>Puedes entrar.</h2><p>Conoce la experiencia del negocio y el panel desde el que Kidria acompaña la operación.</p></div><div className="demo-actions"><button onClick={() => onDemoAccess('cliente')}><Store/><span><small>Demo cliente</small>Panel del negocio</span><ArrowRight/></button><button onClick={() => onDemoAccess('admin_general')}><BarChart3/><span><small>Demo gestión</small>Panel Kidria</span><ArrowRight/></button></div></div>
+        </section>
+        <section id="contacto" className="contact-cinema"><div><p className="eyebrow">La primera conversación</p><h2>¿Qué quieres mejorar<br/>en tu negocio?</h2><p>Cuéntanoslo como se lo contarías a una persona. Te responderemos directamente por WhatsApp.</p>{!isInstalled && <button className="install-secondary" onClick={onInstall}><Download/> Instalar KIDRIA en este dispositivo</button>}</div><form onSubmit={sendRequest}><label htmlFor="business-type">Tengo un...</label><select id="business-type" value={businessType} onChange={e => setBusinessType(e.target.value)}>{businessTypes.map(type => <option key={type}>{type}</option>)}</select><label htmlFor="business-need">Quiero mejorar...</label><textarea id="business-need" value={need} onChange={e => setNeed(e.target.value)} rows={4} placeholder="Ejemplo: recibir pedidos, mostrar mi menú o atender más rápido..."/><button type="submit">Continuar por WhatsApp <ArrowRight/></button>{sent && <small>Solicitud guardada. Abrimos WhatsApp para continuar.</small>}</form></section>
+      </main>
+      <footer><span>© {new Date().getFullYear()} KIDRIA</span><span>Tecnología construida alrededor de negocios reales.</span><button onClick={onLogin}>Acceso clientes</button></footer>
     </div>
   );
 }
